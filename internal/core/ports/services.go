@@ -33,5 +33,6 @@ type ServerService interface {
 	StopForwarding(alias string) error
 	IsForwarding(alias string) bool
 	IsMoshAvailable() bool
+	CopySSHKey(alias string) error
 	Ping(server domain.Server) (bool, time.Duration, error)
 }

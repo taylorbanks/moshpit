@@ -351,6 +351,32 @@ func (s *serverService) IsMoshAvailable() bool {
 	return s.detector.IsMoshAvailable()
 }
 
+// CopySSHKey runs `ssh-copy-id <alias>` interactively so the user's public
+// key gets appended to the remote's authorized_keys. The alias is resolved
+// through the user's ssh_config (so IdentityFile, Port, ProxyJump, etc. are
+// all honored automatically).
+func (s *serverService) CopySSHKey(alias string) error {
+	s.logger.Infow("ssh-copy-id start", "alias", alias)
+
+	if _, err := exec.LookPath("ssh-copy-id"); err != nil {
+		s.logger.Errorw("ssh-copy-id missing", "error", err)
+		return fmt.Errorf("ssh-copy-id not found; install OpenSSH (e.g., brew install openssh)")
+	}
+
+	// #nosec G204 -- alias originates from the user's own ssh_config.
+	cmd := exec.Command("ssh-copy-id", alias)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		s.logger.Errorw("ssh-copy-id failed", "alias", alias, "error", err)
+		return err
+	}
+
+	s.logger.Infow("ssh-copy-id end", "alias", alias)
+	return nil
+}
+
 // Ping checks if the server is reachable on its SSH port.
 func (s *serverService) Ping(server domain.Server) (bool, time.Duration, error) {
 	start := time.Now()

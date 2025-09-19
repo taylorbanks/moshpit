@@ -241,6 +241,7 @@ go build -o moshpit cmd/main.go
 | x     | Stop forwarding                     |
 | c     | Copy SSH command to clipboard       |
 | g     | Ping selected server                |
+| K     | Install SSH key on remote (`ssh-copy-id`) |
 | r     | Refresh background data             |
 | a     | Add server                          |
 | e     | Edit server                         |
@@ -329,4 +330,3 @@ moshpit stands almost entirely on the shoulders of others — these credits are 
 - **[Mosh](https://mosh.org)** — the mobile shell that makes roaming, reconnecting remote sessions possible, and the reason moshpit exists.
 - Built with [tview](https://github.com/rivo/tview) and [tcell](https://github.com/gdamore/tcell).
 - LazySSH itself was inspired by [k9s](https://github.com/derailed/k9s) and [lazydocker](https://github.com/jesseduffield/lazydocker), and moshpit carries that lineage forward.
-
