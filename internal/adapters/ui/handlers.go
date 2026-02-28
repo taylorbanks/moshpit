@@ -303,7 +303,7 @@ func (t *tui) handleTagsEdit() {
 }
 
 func (t *tui) handleNavigateDown() {
-	if t.app.GetFocus() == t.serverList {
+	if t.isServerListFocused() {
 		currentIdx := t.serverList.GetCurrentItem()
 		itemCount := t.serverList.GetItemCount()
 		if currentIdx < itemCount-1 {
@@ -316,7 +316,7 @@ func (t *tui) handleNavigateDown() {
 }
 
 func (t *tui) handleNavigateUp() {
-	if t.app.GetFocus() == t.serverList {
+	if t.isServerListFocused() {
 		currentIdx := t.serverList.GetCurrentItem()
 		if currentIdx > 0 {
 			t.serverList.SetCurrentItem(currentIdx - 1)
@@ -334,6 +334,14 @@ func (t *tui) handleSearchInput(query string) {
 	if len(filtered) == 0 {
 		t.details.ShowEmpty()
 	}
+}
+
+func (t *tui) isServerListFocused() bool {
+	if t == nil || t.app == nil || t.serverList == nil {
+		return false
+	}
+	focus := t.app.GetFocus()
+	return focus == t.serverList || focus == t.serverList.List
 }
 
 func (t *tui) handleSearchFocus() {
