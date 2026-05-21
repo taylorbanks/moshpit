@@ -28,8 +28,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Adembc/lazyssh/internal/core/domain"
-	"github.com/Adembc/lazyssh/internal/core/ports"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
+	"github.com/taylorbanks/moshpit/internal/core/ports"
 	"go.uber.org/zap"
 )
 

@@ -15,10 +15,10 @@
 package ui
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"go.uber.org/zap"
 
-	"github.com/Adembc/lazyssh/internal/core/ports"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
+	"github.com/taylorbanks/moshpit/internal/core/ports"
 	"github.com/rivo/tview"
 )
 
@@ -45,16 +45,24 @@ type tui struct {
 	left    *tview.Flex
 	content *tview.Flex
 
-	sortMode SortMode
+	sortMode           SortMode
+	groupedView        bool
+	showLastSSH        bool
+	onThemeSave        func(string)
+	onGroupedViewSave  func(bool)
 }
 
-func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string) App {
+func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, onThemeSave func(string), groupedView bool, onGroupedViewSave func(bool)) App {
 	return &tui{
-		logger:        logger,
-		app:           tview.NewApplication(),
-		serverService: ss,
-		version:       version,
-		commit:        commit,
+		logger:            logger,
+		app:               tview.NewApplication(),
+		serverService:     ss,
+		version:           version,
+		commit:            commit,
+		showLastSSH:       true,
+		onThemeSave:       onThemeSave,
+		groupedView:       groupedView,
+		onGroupedViewSave: onGroupedViewSave,
 	}
 }
 
@@ -76,14 +84,15 @@ func (t *tui) Run() error {
 }
 
 func (t *tui) initializeTheme() *tui {
-	tview.Styles.PrimitiveBackgroundColor = tcell.Color232
-	tview.Styles.ContrastBackgroundColor = tcell.Color235
-	tview.Styles.BorderColor = tcell.Color238
-	tview.Styles.TitleColor = tcell.Color250
-	tview.Styles.PrimaryTextColor = tcell.Color252
-	tview.Styles.TertiaryTextColor = tcell.Color245
-	tview.Styles.SecondaryTextColor = tcell.Color245
-	tview.Styles.GraphicsColor = tcell.Color238
+	th := ActiveTheme
+	tview.Styles.PrimitiveBackgroundColor = th.Base
+	tview.Styles.ContrastBackgroundColor = th.Surface0
+	tview.Styles.BorderColor = th.Surface1
+	tview.Styles.TitleColor = th.Subtext1
+	tview.Styles.PrimaryTextColor = th.Text
+	tview.Styles.TertiaryTextColor = th.Subtext0
+	tview.Styles.SecondaryTextColor = th.Subtext0
+	tview.Styles.GraphicsColor = th.Surface1
 	return t
 }
 
@@ -136,13 +145,34 @@ func (t *tui) loadInitialData() *tui {
 	servers, _ := t.serverService.ListServers("")
 	sortServersForUI(servers, t.sortMode)
 	t.updateListTitle()
-	t.serverList.UpdateServers(servers)
+	t.updateServerList(servers)
 
 	return t
 }
 
+// updateServerList populates the server list using grouped or flat mode.
+func (t *tui) updateServerList(servers []domain.Server) {
+	if t.groupedView {
+		entries := groupServersByTag(servers, t.sortMode)
+		t.serverList.UpdateServersGrouped(entries)
+	} else {
+		t.serverList.UpdateServers(servers)
+	}
+}
+
 func (t *tui) updateListTitle() {
 	if t.serverList != nil {
-		t.serverList.SetTitle(" Servers — Sort: " + t.sortMode.String() + " ")
+		title := " Servers — Sort: " + t.sortMode.String()
+		if t.groupedView {
+			title += " | Grouped"
+		}
+		title += " "
+		t.serverList.SetTitle(title)
 	}
+}
+
+// rebuildUI rebuilds all components and layout after a theme change.
+func (t *tui) rebuildUI() {
+	t.buildComponents().buildLayout().bindEvents().loadInitialData()
+	t.app.SetRoot(t.root, true)
 }

@@ -16,7 +16,7 @@ package ui
 
 const (
 	AppName = "moshpit"
-	RepoURL = "github.com/taylorbanks/lazymosh"
+	RepoURL = "github.com/taylorbanks/moshpit"
 	Banner  = `
 
 	                                 $$\                 $$\   $$\

@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Adembc/lazyssh/internal/core/domain"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -30,6 +30,9 @@ var IsForwarding func(alias string) bool
 
 // IsMoshAvailable is an optional hook supplied by TUI to indicate if mosh is available.
 var IsMoshAvailable func() bool
+
+// ShowLastSSH controls whether the last SSH column is displayed in the server list.
+var ShowLastSSH = true
 
 // SSH config value constants
 const (
@@ -57,11 +60,10 @@ func renderTagBadgesForList(tags []string) string {
 	}
 	parts := make([]string, 0, len(shown)+1)
 	for _, t := range shown {
-		// Light blue background chip, similar to details view.
-		parts = append(parts, fmt.Sprintf("[black:#5FAFFF] %s [-:-:-]", t))
+		parts = append(parts, fmt.Sprintf("[black:"+Hex(ActiveTheme.Sapphire)+"] %s [-:-:-]", t))
 	}
 	if extra := len(tags) - len(shown); extra > 0 {
-		parts = append(parts, fmt.Sprintf("[#8A8A8A]+%d[-]", extra))
+		parts = append(parts, fmt.Sprintf("["+Hex(ActiveTheme.Subtext0)+"]+%d[-]", extra))
 	}
 	return strings.Join(parts, " ")
 }
@@ -84,7 +86,7 @@ func pinnedIcon(pinnedAt time.Time) string {
 	return "📌" // pinned
 }
 
-func formatServerLine(s domain.Server) (primary, secondary string) {
+func formatServerLine(s domain.Server, hideTags ...bool) (primary, secondary string) {
 	icon := cellPad(pinnedIcon(s.PinnedAt), 2)
 
 	// Protocol indicator
@@ -93,10 +95,10 @@ func formatServerLine(s domain.Server) (primary, secondary string) {
 	if s.Protocol == "mosh" {
 		if IsMoshAvailable != nil && IsMoshAvailable() {
 			pGlyph = "Ⓜ"
-			pColor = "[#A0FFA0]" // green for mosh
+			pColor = "[" + Hex(ActiveTheme.Green) + "]"
 		} else {
 			pGlyph = "⊗"
-			pColor = "[#FF6B6B]" // red for unavailable
+			pColor = "[" + Hex(ActiveTheme.Red) + "]"
 		}
 	}
 	pCol := cellPad(pGlyph, 2)
@@ -112,11 +114,24 @@ func formatServerLine(s domain.Server) (primary, secondary string) {
 	}
 	fCol := cellPad(fGlyph, 2)
 	if isFwd {
-		fCol = "[#A0FFA0]" + fCol + "[-]"
+		fCol = "[" + Hex(ActiveTheme.Green) + "]" + fCol + "[-]"
 	}
 
-	// Format: icon + alias + host + protocol + forwarding + lastSSH + tags
-	primary = fmt.Sprintf("%s [white::b]%-12s[-] [#AAAAAA]%-18s[-] %s%s [#888888]Last SSH: %s[-]  %s", icon, s.Alias, s.Host, pCol, fCol, humanizeDuration(s.LastSeen), renderTagBadgesForList(s.Tags))
+	// Build columns with consistent display widths
+	aliasCol := "[" + Hex(ActiveTheme.Text) + "::b]" + cellPad(s.Alias, 22) + "[-]"
+	hostCol := "[" + Hex(ActiveTheme.Subtext0) + "]" + cellPad(s.Host, 22) + "[-]"
+
+	lastSSHCol := ""
+	if ShowLastSSH {
+		lastSSHCol = "[" + Hex(ActiveTheme.Overlay0) + "]" + cellPad(humanizeDuration(s.LastSeen), 12) + "[-]"
+	}
+
+	tagStr := ""
+	if !(len(hideTags) > 0 && hideTags[0]) {
+		tagStr = renderTagBadgesForList(s.Tags)
+	}
+
+	primary = icon + " " + aliasCol + " " + hostCol + " " + pCol + fCol + lastSSHCol + tagStr
 	secondary = ""
 	return
 }

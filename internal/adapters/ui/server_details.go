@@ -18,8 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Adembc/lazyssh/internal/core/domain"
-	"github.com/gdamore/tcell/v2"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/rivo/tview"
 )
 
@@ -41,8 +40,8 @@ func (sd *ServerDetails) build() {
 		SetBorder(true).
 		SetTitle(" Details ").
 		SetTitleAlign(tview.AlignCenter).
-		SetBorderColor(tcell.Color238).
-		SetTitleColor(tcell.Color250)
+		SetBorderColor(ActiveTheme.Surface1).
+		SetTitleColor(ActiveTheme.Subtext1)
 }
 
 // renderTagChips builds colored tag chips for details view.
@@ -52,7 +51,7 @@ func renderTagChips(tags []string) string {
 	}
 	chips := make([]string, 0, len(tags))
 	for _, t := range tags {
-		chips = append(chips, fmt.Sprintf("[black:#5FAFFF] %s [-:-:-]", t))
+		chips = append(chips, fmt.Sprintf("[black:"+Hex(ActiveTheme.Sapphire)+"] %s [-:-:-]", t))
 	}
 	return strings.Join(chips, " ")
 }
@@ -91,8 +90,9 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 		}
 	}
 
+	textHex := Hex(ActiveTheme.Text)
 	text := fmt.Sprintf(
-		"[::b]%s[-]\n\n[::b]Basic Settings:[-]\n  Host: [white]%s[-]\n  User: [white]%s[-]\n  Port: [white]%s[-]\n  Protocol: [white]%s[-]\n  Key:  [white]%s[-]\n  Tags: %s\n  Pinned: [white]%s[-]\n  Last SSH: %s\n  SSH Count: [white]%d[-]\n",
+		"[::b]%s[-]\n\n[::b]Basic Settings:[-]\n  Host: ["+textHex+"]%s[-]\n  User: ["+textHex+"]%s[-]\n  Port: ["+textHex+"]%s[-]\n  Protocol: ["+textHex+"]%s[-]\n  Key:  ["+textHex+"]%s[-]\n  Tags: %s\n  Pinned: ["+textHex+"]%s[-]\n  Last SSH: %s\n  SSH Count: ["+textHex+"]%d[-]\n",
 		aliasText, hostText, userText, portText, protocolText,
 		serverKey, tagsText, pinnedStr,
 		lastSeen, server.SSHCount)
@@ -212,7 +212,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 		for _, field := range group.fields {
 			if field.value != "" {
 				hasAdvanced = true
-				advancedText += fmt.Sprintf("  %s: [white]%s[-]\n", field.name, field.value)
+				advancedText += fmt.Sprintf("  %s: ["+textHex+"]%s[-]\n", field.name, field.value)
 			}
 		}
 	}
@@ -222,7 +222,7 @@ func (sd *ServerDetails) UpdateServer(server domain.Server) {
 	}
 
 	// Commands list
-	text += "\n[::b]Commands:[-]\n  Enter: SSH connect\n  m: Toggle SSH/Mosh\n  M: Bulk toggle by tag\n  f: Port forward\n  x: Stop forwarding\n  c: Copy SSH command\n  g: Ping server\n  r: Refresh list\n  a: Add new server\n  e: Edit entry\n  t: Edit tags\n  d: Delete entry\n  p: Pin/Unpin"
+	text += "\n[::b]Commands:[-]\n  Enter: SSH/Mosh connect\n  m: Toggle SSH/Mosh\n  M: Bulk toggle by tag\n  f: Port forward\n  x: Stop forwarding\n  c: Copy SSH command\n  g: Ping server\n  r: Refresh list\n  s/S: Sort / Reverse sort\n  v: Toggle grouped view\n  l: Toggle last SSH column\n  T: Theme picker\n  a: Add new server\n  e: Edit entry\n  t: Edit tags\n  d: Delete entry\n  p: Pin/Unpin"
 
 	sd.TextView.SetText(text)
 }

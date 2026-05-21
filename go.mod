@@ -1,4 +1,4 @@
-module github.com/Adembc/lazyssh
+module github.com/taylorbanks/moshpit
 
 go 1.24.6
 

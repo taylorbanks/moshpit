@@ -19,11 +19,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Adembc/lazyssh/internal/adapters/data/ssh_config_file"
-	"github.com/Adembc/lazyssh/internal/logger"
+	"github.com/taylorbanks/moshpit/internal/adapters/data/ssh_config_file"
+	"github.com/taylorbanks/moshpit/internal/logger"
 
-	"github.com/Adembc/lazyssh/internal/adapters/ui"
-	"github.com/Adembc/lazyssh/internal/core/services"
+	"github.com/taylorbanks/moshpit/internal/adapters/ui"
+	"github.com/taylorbanks/moshpit/internal/core/services"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ var (
 	gitCommit = "unknown"
 )
 
-// getMetadataPath returns the metadata file path, migrating from .lazyssh/.lazymosh to .moshpit if needed.
+// getMetadataPath returns the metadata file path, migrating from .lazyssh/.moshpit-legacy to .moshpit if needed.
 func getMetadataPath(home string) string {
 	newPath := filepath.Join(home, ".moshpit", "metadata.json")
 	lazymoshPath := filepath.Join(home, ".lazymosh", "metadata.json")
@@ -43,7 +43,7 @@ func getMetadataPath(home string) string {
 		return newPath
 	}
 
-	// Try to migrate from .lazymosh first (most recent)
+	// Try to migrate from .lazymosh first (legacy path)
 	if _, err := os.Stat(lazymoshPath); err == nil {
 		if err := os.MkdirAll(filepath.Dir(newPath), 0o750); err == nil {
 			if data, err := os.ReadFile(lazymoshPath); err == nil {
@@ -92,9 +92,34 @@ func main() {
 	sshConfigFile := filepath.Join(home, ".ssh", "config")
 	metaDataFile := getMetadataPath(home)
 
+	configFile := filepath.Join(home, ".moshpit", "config.json")
+	configMgr := ssh_config_file.NewConfigManager(configFile, log)
+
+	// Load saved config
+	appConfig := configMgr.Load()
+	if appConfig.Theme != "" {
+		ui.SetActiveTheme(appConfig.Theme)
+	}
+
+	// Default grouped view to true when unset
+	groupedView := true
+	if appConfig.GroupedView != nil {
+		groupedView = *appConfig.GroupedView
+	}
+
 	serverRepo := ssh_config_file.NewRepository(log, sshConfigFile, metaDataFile)
 	serverService := services.NewServerService(log, serverRepo)
-	tui := ui.NewTUI(log, serverService, version, gitCommit)
+	tui := ui.NewTUI(log, serverService, version, gitCommit, func(themeName string) {
+		appConfig.Theme = themeName
+		if err := configMgr.Save(appConfig); err != nil {
+			log.Warnw("failed to save theme preference", "error", err)
+		}
+	}, groupedView, func(grouped bool) {
+		appConfig.GroupedView = &grouped
+		if err := configMgr.Save(appConfig); err != nil {
+			log.Warnw("failed to save grouped view preference", "error", err)
+		}
+	})
 
 	rootCmd := &cobra.Command{
 		Use:   ui.AppName,

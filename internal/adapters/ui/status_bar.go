@@ -15,17 +15,17 @@
 package ui
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 func DefaultStatusText() string {
-	return "[white]↑↓[-] Navigate  • [white]Enter[-] SSH  • [white]f[-] Forward  • [white]x[-] Stop Forward  • [white]c[-] Copy SSH  • [white]a[-] Add  • [white]e[-] Edit  • [white]g[-] Ping  • [white]d[-] Delete  • [white]p[-] Pin/Unpin  • [white]/[-] Search  • [white]q[-] Quit"
+	k := Hex(ActiveTheme.Text)
+	return "[" + k + "]↑↓[-] Navigate  • [" + k + "]Enter[-] SSH  • [" + k + "]f[-] Forward  • [" + k + "]x[-] Stop Forward  • [" + k + "]c[-] Copy SSH  • [" + k + "]a[-] Add  • [" + k + "]e[-] Edit  • [" + k + "]g[-] Ping  • [" + k + "]v[-] Group  • [" + k + "]d[-] Delete  • [" + k + "]p[-] Pin/Unpin  • [" + k + "]/[-] Search  • [" + k + "]q[-] Quit"
 }
 
 func NewStatusBar() *tview.TextView {
 	status := tview.NewTextView().SetDynamicColors(true)
-	status.SetBackgroundColor(tcell.Color235)
+	status.SetBackgroundColor(ActiveTheme.Mantle)
 	status.SetTextAlign(tview.AlignCenter)
 	status.SetText(DefaultStatusText())
 	return status

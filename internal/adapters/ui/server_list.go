@@ -15,7 +15,7 @@
 package ui
 
 import (
-	"github.com/Adembc/lazyssh/internal/core/domain"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -23,6 +23,7 @@ import (
 type ServerList struct {
 	*tview.List
 	servers           []domain.Server
+	entries           []listEntry
 	onSelection       func(domain.Server)
 	onSelectionChange func(domain.Server)
 	onReturnToSearch  func()
@@ -41,16 +42,22 @@ func (sl *ServerList) build() {
 	sl.List.SetBorder(true).
 		SetTitle(" Servers ").
 		SetTitleAlign(tview.AlignCenter).
-		SetBorderColor(tcell.Color238).
-		SetTitleColor(tcell.Color250)
+		SetBorderColor(ActiveTheme.Surface1).
+		SetTitleColor(ActiveTheme.Subtext1)
 	sl.List.
-		SetSelectedBackgroundColor(tcell.Color24).
-		SetSelectedTextColor(tcell.Color255).
+		SetSelectedBackgroundColor(ActiveTheme.Blue).
+		SetSelectedTextColor(ActiveTheme.Crust).
 		SetHighlightFullLine(true)
 
 	sl.List.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		if index >= 0 && index < len(sl.servers) && sl.onSelectionChange != nil {
-			sl.onSelectionChange(sl.servers[index])
+		if index >= 0 && index < len(sl.entries) {
+			entry := sl.entries[index]
+			if entry.isHeader {
+				return
+			}
+			if entry.server != nil && sl.onSelectionChange != nil {
+				sl.onSelectionChange(*entry.server)
+			}
 		}
 	})
 
@@ -69,6 +76,10 @@ func (sl *ServerList) build() {
 
 func (sl *ServerList) UpdateServers(servers []domain.Server) {
 	sl.servers = servers
+	sl.entries = make([]listEntry, len(servers))
+	for i := range servers {
+		sl.entries[i] = listEntry{server: &sl.servers[i]}
+	}
 	sl.List.Clear()
 
 	for i := range servers {
@@ -89,10 +100,106 @@ func (sl *ServerList) UpdateServers(servers []domain.Server) {
 	}
 }
 
+// UpdateServersGrouped populates the list with grouped entries (headers + servers).
+func (sl *ServerList) UpdateServersGrouped(entries []listEntry) {
+	sl.entries = entries
+	// Rebuild flat servers slice for compatibility
+	sl.servers = nil
+	for _, e := range entries {
+		if e.server != nil {
+			sl.servers = append(sl.servers, *e.server)
+		}
+	}
+	sl.List.Clear()
+
+	// Count servers per group for header display
+	counts := make(map[int]int) // header index -> count
+	for i, e := range entries {
+		if e.isHeader {
+			count := 0
+			for j := i + 1; j < len(entries); j++ {
+				if entries[j].isHeader {
+					break
+				}
+				count++
+			}
+			counts[i] = count
+		}
+	}
+
+	for i, e := range entries {
+		idx := i
+		if e.isHeader {
+			header := formatGroupHeader(e.tag, counts[i])
+			sl.List.AddItem(header, "", 0, nil)
+		} else if e.server != nil {
+			primary, secondary := formatServerLine(*e.server, true)
+			sl.List.AddItem("  "+primary, secondary, 0, func() {
+				if sl.onSelection != nil && idx < len(sl.entries) && sl.entries[idx].server != nil {
+					sl.onSelection(*sl.entries[idx].server)
+				}
+			})
+		}
+	}
+
+	// Select first non-header entry
+	if sl.List.GetItemCount() > 0 {
+		firstServer := sl.findNextServer(0, 1)
+		if firstServer >= 0 {
+			sl.List.SetCurrentItem(firstServer)
+			if sl.entries[firstServer].server != nil && sl.onSelectionChange != nil {
+				sl.onSelectionChange(*sl.entries[firstServer].server)
+			}
+		}
+	}
+}
+
+// findNextServer finds the next non-header entry starting from idx in the given direction.
+// Returns -1 if none found.
+func (sl *ServerList) findNextServer(idx int, direction int) int {
+	for i := idx; i >= 0 && i < len(sl.entries); i += direction {
+		if !sl.entries[i].isHeader {
+			return i
+		}
+	}
+	return -1
+}
+
+// SkipToNextServer adjusts the current selection to skip headers in the given direction.
+// Returns true if a valid server was found and selected.
+func (sl *ServerList) SkipToNextServer(direction int) bool {
+	current := sl.List.GetCurrentItem()
+	if current < 0 || current >= len(sl.entries) {
+		return false
+	}
+	if !sl.entries[current].isHeader {
+		return true
+	}
+	next := sl.findNextServer(current+direction, direction)
+	if next >= 0 {
+		sl.List.SetCurrentItem(next)
+		return true
+	}
+	// Try wrapping
+	if direction > 0 {
+		next = sl.findNextServer(0, 1)
+	} else {
+		next = sl.findNextServer(len(sl.entries)-1, -1)
+	}
+	if next >= 0 {
+		sl.List.SetCurrentItem(next)
+		return true
+	}
+	return false
+}
+
 func (sl *ServerList) GetSelectedServer() (domain.Server, bool) {
 	idx := sl.List.GetCurrentItem()
-	if idx >= 0 && idx < len(sl.servers) {
-		return sl.servers[idx], true
+	if idx >= 0 && idx < len(sl.entries) {
+		entry := sl.entries[idx]
+		if !entry.isHeader && entry.server != nil {
+			return *entry.server, true
+		}
 	}
 	return domain.Server{}, false
 }

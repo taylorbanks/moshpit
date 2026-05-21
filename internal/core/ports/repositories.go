@@ -14,7 +14,7 @@
 
 package ports
 
-import "github.com/Adembc/lazyssh/internal/core/domain"
+import "github.com/taylorbanks/moshpit/internal/core/domain"
 
 type ServerRepository interface {
 	ListServers(query string) ([]domain.Server, error)

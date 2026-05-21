@@ -1,5 +1,5 @@
 version: 2
-project_name: lazymosh
+project_name: moshpit
 
 before:
   hooks:
@@ -52,7 +52,7 @@ brews:
   - repository:
       owner: taylorbanks
       name: homebrew-tap
-    homepage: "https://github.com/taylorbanks/lazymosh"
+    homepage: "https://github.com/taylorbanks/moshpit"
     description: "A terminal-based SSH/Mosh manager with protocol flexibility and roaming connection support"
 
 release:

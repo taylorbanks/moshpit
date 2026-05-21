@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="./docs/logo.png" alt="lazymosh logo" width="600" height="600"/>
+  <img src="./docs/logo.png" alt="moshpit logo" width="600" height="600"/>
 </div>
 
 ---
 
-LazyMosh is a terminal-based, interactive SSH/Mosh manager inspired by tools like lazydocker and k9s — but built for managing your fleet of servers directly from your terminal.
+moshpit is a terminal-based, interactive SSH/Mosh manager inspired by tools like lazydocker and k9s — but built for managing your fleet of servers directly from your terminal.
 <br/>
-With LazyMosh, you can quickly navigate, connect, manage, and transfer files between your local machine and any server defined in your `~/.ssh/config`. Toggle seamlessly between SSH and Mosh protocols for optimal connectivity. No more remembering IP addresses or running long scp commands — just a clean, keyboard-driven UI with powerful protocol flexibility.
+With moshpit, you can quickly navigate, connect, manage, and transfer files between your local machine and any server defined in your `~/.ssh/config`. Toggle seamlessly between SSH and Mosh protocols for optimal connectivity. No more remembering IP addresses or running long scp commands — just a clean, keyboard-driven UI with powerful protocol flexibility.
 
 ---
 
@@ -58,37 +58,37 @@ With LazyMosh, you can quickly navigate, connect, manage, and transfer files bet
 
 ## 🔐 Security Notice
 
-LazyMosh does not introduce any new security risks.
+moshpit does not introduce any new security risks.
 It is simply a UI/TUI wrapper around your existing `~/.ssh/config` file.
 
 - All SSH connections are executed through your system's native ssh binary (OpenSSH).
 
 - Mosh connections are executed through your system's mosh binary when available.
 
-- Private keys, passwords, and credentials are never stored, transmitted, or modified by LazyMosh.
+- Private keys, passwords, and credentials are never stored, transmitted, or modified by moshpit.
 
 - Your existing IdentityFile paths and ssh-agent integrations work exactly as before.
 
-- LazyMosh only reads and updates your `~/.ssh/config`. A backup of the file is created automatically before any changes.
+- moshpit only reads and updates your `~/.ssh/config`. A backup of the file is created automatically before any changes.
 
-- Protocol preferences (SSH vs Mosh) are stored separately in `~/.lazymosh/metadata.json` and never affect your SSH config.
+- Protocol preferences (SSH vs Mosh) are stored separately in `~/.moshpit/metadata.json` and never affect your SSH config.
 
 - File permissions on your SSH config are preserved to ensure security.
 
 
 ## 🛡️ Config Safety: Non‑destructive writes and backups
 
-- **Non‑destructive edits**: LazyMosh only writes the minimal required changes to your ~/.ssh/config. It uses a parser that preserves existing comments, spacing, order, and any settings it didn't touch. Your handcrafted comments and formatting remain intact.
+- **Non‑destructive edits**: moshpit only writes the minimal required changes to your ~/.ssh/config. It uses a parser that preserves existing comments, spacing, order, and any settings it didn't touch. Your handcrafted comments and formatting remain intact.
 - **Atomic writes**: Updates are written to a temporary file and then atomically renamed over the original, minimizing the risk of partial writes.
-- **Protocol preferences**: Mosh/SSH protocol preferences are stored separately in `~/.lazymosh/metadata.json` and never modify your SSH config.
+- **Protocol preferences**: Mosh/SSH protocol preferences are stored separately in `~/.moshpit/metadata.json` and never modify your SSH config.
 - **Backups**:
-  - One‑time original backup: Before LazyMosh makes its first change, it creates a single snapshot named config.original.backup beside your SSH config. If this file is present, it will never be recreated or overwritten.
-  - Rolling backups: On every subsequent save, LazyMosh also creates a timestamped backup named like: ~/.ssh/config-<timestamp>-lazymosh.backup. The app keeps at most 10 of these backups, automatically removing the oldest ones.
-- **Migration**: Automatically migrates existing LazySSH data from `~/.lazyssh/` to `~/.lazymosh/` on first run.
+  - One‑time original backup: Before moshpit makes its first change, it creates a single snapshot named config.original.backup beside your SSH config. If this file is present, it will never be recreated or overwritten.
+  - Rolling backups: On every subsequent save, moshpit also creates a timestamped backup named like: ~/.ssh/config-<timestamp>-moshpit.backup. The app keeps at most 10 of these backups, automatically removing the oldest ones.
+- **Migration**: Automatically migrates existing data from `~/.lazyssh/` or `~/.lazymosh/` to `~/.moshpit/` on first run.
 
 ## 📷 Screenshots
 
-> **Note**: Screenshots are from LazySSH and will be updated to reflect the new LazyMosh branding and mosh protocol features.
+> **Note**: Screenshots will be updated to reflect the latest moshpit branding and mosh protocol features.
 
 <div align="center">
 
@@ -139,38 +139,38 @@ SSH into the selected server
 ### Option 1: Homebrew (macOS)
 
 ```bash
-brew install taylorbanks/homebrew-tap/lazymosh
+brew install taylorbanks/homebrew-tap/moshpit
 ```
 
 ### Option 2: Download Binary from Releases
 
-Download from [GitHub Releases](https://github.com/taylorbanks/lazymosh/releases). You can use the snippet below to automatically fetch the latest version for your OS/ARCH (Darwin/Linux and amd64/arm64 supported):
+Download from [GitHub Releases](https://github.com/taylorbanks/moshpit/releases). You can use the snippet below to automatically fetch the latest version for your OS/ARCH (Darwin/Linux and amd64/arm64 supported):
 
 ```bash
 # Detect latest version
-LATEST_TAG=$(curl -fsSL https://api.github.com/repos/taylorbanks/lazymosh/releases/latest | jq -r .tag_name)
+LATEST_TAG=$(curl -fsSL https://api.github.com/repos/taylorbanks/moshpit/releases/latest | jq -r .tag_name)
 # Download the correct binary for your system
-curl -LJO "https://github.com/taylorbanks/lazymosh/releases/download/${LATEST_TAG}/lazymosh_$(uname)_$(uname -m).tar.gz"
+curl -LJO "https://github.com/taylorbanks/moshpit/releases/download/${LATEST_TAG}/moshpit_$(uname)_$(uname -m).tar.gz"
 # Extract the binary
-tar -xzf lazymosh_$(uname)_$(uname -m).tar.gz
+tar -xzf moshpit_$(uname)_$(uname -m).tar.gz
 # Move to /usr/local/bin or another directory in your PATH
-sudo mv lazymosh /usr/local/bin/
+sudo mv moshpit /usr/local/bin/
 # enjoy!
-lazymosh
+moshpit
 ```
 
 ### Option 3: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/taylorbanks/lazymosh.git
-cd lazymosh
+git clone https://github.com/taylorbanks/moshpit.git
+cd moshpit
 
 # Build
-go build -o lazymosh cmd/main.go
+go build -o moshpit cmd/main.go
 
 # Run it
-./lazymosh
+./moshpit
 ```
 
 ### Requirements
@@ -223,10 +223,10 @@ Tip: The hint bar at the top of the list shows the most useful shortcuts.
 
 Contributions are welcome!
 
-- If you spot a bug or have a feature request, please [open an issue](https://github.com/taylorbanks/lazymosh/issues).
+- If you spot a bug or have a feature request, please [open an issue](https://github.com/taylorbanks/moshpit/issues).
 - If you'd like to contribute, fork the repo and submit a pull request ❤️.
 
-We love seeing the community make LazyMosh better 🤘
+We love seeing the community make moshpit better 🤘
 
 ### Semantic Pull Requests
 
@@ -261,7 +261,7 @@ Tip: If your PR touches multiple areas, pick the most relevant scope or omit the
 
 ## ⭐ Support
 
-If you find LazyMosh useful, please consider giving the repo a **star** ⭐️ and join [stargazers](https://github.com/taylorbanks/lazymosh/stargazers).
+If you find moshpit useful, please consider giving the repo a **star** ⭐️ and join [stargazers](https://github.com/taylorbanks/moshpit/stargazers).
 
 <!-- Uncomment and update with your own support link if desired:
 ☕ You can also support me by [buying me a coffee](https://www.buymeacoffee.com/yourusername) ❤️
@@ -276,6 +276,6 @@ If you find LazyMosh useful, please consider giving the repo a **star** ⭐️ a
 
 - Built with [tview](https://github.com/rivo/tview) and [tcell](https://github.com/gdamore/tcell).
 - Inspired by [k9s](https://github.com/derailed/k9s) and [lazydocker](https://github.com/jesseduffield/lazydocker).
-- Originally forked from [LazySSH by Adembc](https://github.com/Adembc/lazyssh) - enhanced with mosh protocol support.
+- Originally forked from [LazySSH by Adembc](https://github.com/Adembc/lazyssh) - enhanced with mosh protocol support and rebranded as moshpit.
 - Mosh protocol by [mosh.org](https://mosh.org) - the mobile shell for reliable remote connections.
 
