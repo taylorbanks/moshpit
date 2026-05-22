@@ -4,9 +4,32 @@
 
 ---
 
-moshpit is a terminal-based, interactive SSH/Mosh manager inspired by tools like lazydocker and k9s — but built for managing your fleet of servers directly from your terminal.
-<br/>
-With moshpit, you can quickly navigate, connect, manage, and transfer files between your local machine and any server defined in your `~/.ssh/config`. Toggle seamlessly between SSH and Mosh protocols for optimal connectivity. No more remembering IP addresses or running long scp commands — just a clean, keyboard-driven UI with powerful protocol flexibility.
+**moshpit** is a fast, keyboard-driven terminal UI for managing your fleet of SSH and [Mosh](https://mosh.org) servers. It reads the hosts you already have in `~/.ssh/config`, lets you connect with a single keypress, and switches any host between SSH and Mosh without ever touching your config file.
+
+No more memorizing IP addresses, hunting through config files, or typing long `scp` commands — just a clean list of your servers, fuzzy search, and one key to connect.
+
+---
+
+## 🤘 Why moshpit?
+
+moshpit is a friendly fork of [**LazySSH**](https://github.com/Adembc/lazyssh) by [Adembc](https://github.com/Adembc) — an excellent terminal SSH config manager, and the source of roughly **95% of this codebase**. Huge thanks and full credit to the LazySSH maintainers and contributors for that foundation. moshpit would not exist without it.
+
+So why fork it? LazySSH is SSH-only, and a plain SSH session dies every time you close your laptop, switch networks, or lose Wi-Fi for a moment. [Mosh](https://mosh.org) (the mobile shell) fixes that — it survives roaming, suspend/resume, and flaky connections — but no TUI manager made it easy to run Mosh per-host alongside SSH. moshpit does.
+
+If you live on trains, planes, coffee shops, or just a laptop lid, moshpit keeps your connections alive.
+
+### What moshpit adds on top of LazySSH
+
+- 🤘 **Mosh protocol support** — toggle any host between SSH and Mosh on a per-host basis, with automatic fallback to SSH when Mosh isn't installed.
+- 🏷 **Bulk protocol toggle** — flip every server carrying a given tag to Mosh (or back to SSH) at once.
+- 📊 **Visual protocol indicators** — see at a glance which hosts are set to use Mosh.
+- ✅ **Cross-platform Mosh detection** — moshpit detects whether the `mosh` binary is available and adapts accordingly.
+- 🎨 **12 built-in themes** — Catppuccin, Dracula, Tokyo Night, Nord, Gruvbox, Solarized, Rosé Pine and more, switchable live from an in-app picker.
+- 🗂 **Tag-based grouped view** — collapse your fleet into groups by tag, with an aligned column layout for easy scanning.
+- 🛟 **Protocol preferences stay out of your SSH config** — SSH/Mosh choices live in `~/.moshpit/metadata.json`, so `~/.ssh/config` is never polluted.
+- 🔁 **Safe data migration** — automatically migrates existing data from `~/.lazyssh/` or `~/.lazymosh/` to `~/.moshpit/` on first run.
+
+Everything LazySSH already did well — non-destructive config edits, automatic backups, 60+ SSH config options, port forwarding, and key management — is fully preserved.
 
 ---
 
@@ -32,7 +55,13 @@ With moshpit, you can quickly navigate, connect, manage, and transfer files betw
 - 🔍 Fuzzy search by alias, IP, or tags.
 - 🖥 One‑keypress connection to the selected server (Enter) - uses SSH or Mosh based on preference.
 - 🏷 Tag servers (e.g., prod, dev, test) for quick filtering.
+- 🗂 Tag-based grouped view — collapse the list into groups by tag (press `v`).
+- 📐 Aligned column layout for fast scanning across a large fleet.
 - ↕️ Sort by alias or last connection (toggle + reverse).
+
+### Appearance
+- 🎨 12 built-in themes: Default, Catppuccin Mocha, Catppuccin Latte, Solarized Dark, Solarized Light, Dracula, Tokyo Night, Nord, Gruvbox Dark, Gruvbox Light, Ristretto, and Rosé Pine.
+- 🖌 In-app theme picker — switch themes live without restarting (press `T`).
 
 ### Advanced SSH Configuration
 - 🔗 Port forwarding (LocalForward, RemoteForward, DynamicForward).
@@ -205,6 +234,9 @@ go build -o moshpit cmd/main.go
 | p     | Pin/Unpin server                    |
 | s     | Toggle sort field                   |
 | S     | Reverse sort order                  |
+| v     | Toggle grouped (by tag) / flat view |
+| T     | Open theme picker                   |
+| l     | Toggle last-connection column       |
 | q     | Quit                                |
 
 **In Server Form:**
@@ -274,8 +306,11 @@ If you find moshpit useful, please consider giving the repo a **star** ⭐️ an
 
 ## 🙏 Acknowledgments
 
+moshpit stands almost entirely on the shoulders of others — these credits are not a formality.
+
+- **[LazySSH](https://github.com/Adembc/lazyssh) by [Adembc](https://github.com/Adembc)** — moshpit is a direct fork of LazySSH, and roughly **95% of this codebase is LazySSH's work**. The architecture, the SSH config parser, the non-destructive write/backup system, the 60+ SSH config field support, and the entire TUI foundation all come from LazySSH and its contributors. Thank you. moshpit exists only because LazySSH gave it such a strong starting point.
+- **[digunix (Kevin)](https://github.com/digunix)** — for substantial contributions to moshpit via pull request: completing the moshpit rebrand, building the 12-theme library and in-app theme picker, and adding the tag-based grouped view with aligned column layout. Much appreciated. 🤘
+- **[Mosh](https://mosh.org)** — the mobile shell that makes roaming, reconnecting remote sessions possible, and the reason moshpit exists.
 - Built with [tview](https://github.com/rivo/tview) and [tcell](https://github.com/gdamore/tcell).
-- Inspired by [k9s](https://github.com/derailed/k9s) and [lazydocker](https://github.com/jesseduffield/lazydocker).
-- Originally forked from [LazySSH by Adembc](https://github.com/Adembc/lazyssh) - enhanced with mosh protocol support and rebranded as moshpit.
-- Mosh protocol by [mosh.org](https://mosh.org) - the mobile shell for reliable remote connections.
+- LazySSH itself was inspired by [k9s](https://github.com/derailed/k9s) and [lazydocker](https://github.com/jesseduffield/lazydocker), and moshpit carries that lineage forward.
 
