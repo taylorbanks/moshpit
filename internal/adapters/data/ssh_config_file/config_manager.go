@@ -27,6 +27,7 @@ import (
 type AppConfig struct {
 	Theme       string `json:"theme"`
 	GroupedView *bool  `json:"grouped_view,omitempty"`
+	ShowSplash  *bool  `json:"show_splash,omitempty"`
 }
 
 type configManager struct {

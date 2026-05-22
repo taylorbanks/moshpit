@@ -34,6 +34,10 @@ var IsMoshAvailable func() bool
 // ShowLastSSH controls whether the last SSH column is displayed in the server list.
 var ShowLastSSH = true
 
+// SplashOnStartup mirrors whether the startup mosh-pit screen is enabled, so
+// the details pane can show its on/off state.
+var SplashOnStartup = true
+
 // SSH config value constants
 const (
 	sshYes   = "yes"

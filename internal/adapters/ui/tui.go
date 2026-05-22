@@ -15,6 +15,8 @@
 package ui
 
 import (
+	"sync"
+
 	"go.uber.org/zap"
 
 	"github.com/rivo/tview"
@@ -45,14 +47,21 @@ type tui struct {
 	left    *tview.Flex
 	content *tview.Flex
 
+	splashBody *tview.TextView
+	splashPit  *moshSim
+	splashDone chan struct{}
+	splashOnce sync.Once
+
 	sortMode          SortMode
 	groupedView       bool
 	showLastSSH       bool
+	showSplash        bool
 	onThemeSave       func(string)
 	onGroupedViewSave func(bool)
+	onShowSplashSave  func(bool)
 }
 
-func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, onThemeSave func(string), groupedView bool, onGroupedViewSave func(bool)) App {
+func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, onThemeSave func(string), groupedView bool, onGroupedViewSave func(bool), showSplash bool, onShowSplashSave func(bool)) App {
 	return &tui{
 		logger:            logger,
 		app:               tview.NewApplication(),
@@ -60,9 +69,11 @@ func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit s
 		version:           version,
 		commit:            commit,
 		showLastSSH:       true,
+		showSplash:        showSplash,
 		onThemeSave:       onThemeSave,
 		groupedView:       groupedView,
 		onGroupedViewSave: onGroupedViewSave,
+		onShowSplashSave:  onShowSplashSave,
 	}
 }
 
@@ -74,9 +85,13 @@ func (t *tui) Run() error {
 	}()
 	t.app.EnableMouse(true)
 	t.initializeTheme().buildComponents().buildLayout().bindEvents().loadInitialData()
-	// Show the branded loading screen first, then swap to the main UI.
-	t.app.SetRoot(t.buildSplash(), true)
-	t.scheduleSplashDismiss()
+	if t.showSplash {
+		// Show the branded loading screen first; any key swaps to the main UI.
+		t.app.SetRoot(t.buildSplash(), true)
+		t.animateSplash()
+	} else {
+		t.app.SetRoot(t.root, true)
+	}
 	t.logger.Infow("starting TUI application", "version", t.version, "commit", t.commit)
 	if err := t.app.Run(); err != nil {
 		t.logger.Errorw("application run error", "error", err)
@@ -106,6 +121,7 @@ func (t *tui) buildComponents() *tui {
 		OnNavigate(t.handleSearchNavigate)
 	IsForwarding = t.serverService.IsForwarding
 	IsMoshAvailable = t.serverService.IsMoshAvailable
+	SplashOnStartup = t.showSplash
 
 	t.serverList = NewServerList().
 		OnSelectionChange(t.handleServerSelectionChange).

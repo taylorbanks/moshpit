@@ -107,6 +107,12 @@ func main() {
 		groupedView = *appConfig.GroupedView
 	}
 
+	// Default the startup screen to on when unset
+	showSplash := true
+	if appConfig.ShowSplash != nil {
+		showSplash = *appConfig.ShowSplash
+	}
+
 	serverRepo := ssh_config_file.NewRepository(log, sshConfigFile, metaDataFile)
 	serverService := services.NewServerService(log, serverRepo)
 	tui := ui.NewTUI(log, serverService, version, gitCommit, func(themeName string) {
@@ -118,6 +124,11 @@ func main() {
 		appConfig.GroupedView = &grouped
 		if err := configMgr.Save(appConfig); err != nil {
 			log.Warnw("failed to save grouped view preference", "error", err)
+		}
+	}, showSplash, func(show bool) {
+		appConfig.ShowSplash = &show
+		if err := configMgr.Save(appConfig); err != nil {
+			log.Warnw("failed to save startup screen preference", "error", err)
 		}
 	})
 

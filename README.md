@@ -237,6 +237,7 @@ go build -o moshpit cmd/main.go
 | v     | Toggle grouped (by tag) / flat view |
 | T     | Open theme picker                   |
 | l     | Toggle last-connection column       |
+| i     | Toggle startup screen (next launch) |
 | q     | Quit                                |
 
 **In Server Form:**

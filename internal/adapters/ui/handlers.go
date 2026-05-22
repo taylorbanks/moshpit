@@ -109,6 +109,9 @@ func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
 	case 'l':
 		t.handleLastSSHToggle()
 		return nil
+	case 'i':
+		t.handleSplashToggle()
+		return nil
 	}
 
 	if event.Key() == tcell.KeyEnter {
@@ -233,6 +236,25 @@ func (t *tui) handleLastSSHToggle() {
 		t.showStatusTemp("Last SSH: hidden")
 	}
 	t.refreshServerList()
+}
+
+// handleSplashToggle turns the startup mosh-pit screen on or off. The change
+// is persisted and takes effect on the next launch.
+func (t *tui) handleSplashToggle() {
+	t.showSplash = !t.showSplash
+	SplashOnStartup = t.showSplash
+	if t.onShowSplashSave != nil {
+		t.onShowSplashSave(t.showSplash)
+	}
+	if t.showSplash {
+		t.showStatusTemp("Startup screen: on — shows on next launch")
+	} else {
+		t.showStatusTemp("Startup screen: off")
+	}
+	// Refresh the details pane so its Commands list shows the new state.
+	if server, ok := t.serverList.GetSelectedServer(); ok {
+		t.details.UpdateServer(server)
+	}
 }
 
 func (t *tui) handleGroupToggle() {
