@@ -8,6 +8,21 @@
 
 No more memorizing IP addresses, hunting through config files, or typing long `scp` commands — just a clean list of your servers, fuzzy search, and one key to connect.
 
+```text
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║   [ ✓ ]   Safety first -- no new SSH stack, no key handling.           ║
+║                                                                        ║
+║       -  Connects through your system's OpenSSH (or Mosh) binary       ║
+║       -  Never reads, stores, or transmits your keys or passwords      ║
+║       -  Edits ~/.ssh/config non-destructively, with auto-backups      ║
+║       -  Protocol prefs live in ~/.moshpit/, never in your SSH config  ║
+║                                                                        ║
+║       Full breakdown: see the "Security Notice" section below.         ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+```
+
 ---
 
 ## 🤘 Why moshpit?
