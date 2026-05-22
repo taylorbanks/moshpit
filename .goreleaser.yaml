@@ -52,8 +52,16 @@ brews:
   - repository:
       owner: taylorbanks
       name: homebrew-tap
+      # PAT from the release workflow; needs write access to homebrew-tap.
+      token: "{{ .Env.GITHUB_TOKEN }}"
     homepage: "https://github.com/taylorbanks/moshpit"
     description: "A terminal-based SSH/Mosh manager with protocol flexibility and roaming connection support"
+    license: "Apache-2.0"
+    commit_author:
+      name: goreleaser-bot
+      email: bot@goreleaser.com
+    test: |
+      system "#{bin}/moshpit", "--version"
 
 release:
   footer: >-

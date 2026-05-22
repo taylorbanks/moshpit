@@ -122,8 +122,9 @@ func main() {
 	})
 
 	rootCmd := &cobra.Command{
-		Use:   ui.AppName,
-		Short: "SSH/Mosh server manager with protocol flexibility",
+		Use:     ui.AppName,
+		Short:   "SSH/Mosh server manager with protocol flexibility",
+		Version: fmt.Sprintf("%s (%s)", version, gitCommit),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return tui.Run()
 		},

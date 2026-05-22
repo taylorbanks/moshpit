@@ -3,20 +3,30 @@ on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # GoReleaser needs full history and tags for the changelog.
+          fetch-depth: 0
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.22.x
+          # Track the version declared in go.mod (currently 1.24.x).
+          go-version-file: go.mod
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version:  2.9.0
+          version: "~> v2"
           args: release --clean
         env:
+          # Personal access token: must be able to create releases on this
+          # repo AND push the formula to taylorbanks/homebrew-tap.
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
