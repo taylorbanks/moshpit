@@ -6,7 +6,7 @@
 
 **moshpit** is a fast, keyboard-driven terminal UI for managing your fleet of SSH and [Mosh](https://mosh.org) servers. It reads the hosts you already have in `~/.ssh/config`, lets you connect with a single keypress, and switches any host between SSH and Mosh without ever touching your config file.
 
-No more memorizing IP addresses, hunting through config files, or typing long `scp` commands — just a clean list of your servers, fuzzy search, and one key to connect.
+No more memorizing IP addresses, hand-editing `~/.ssh/config`, or remembering which key, port, and user go with which host — just a clean list of your servers, fuzzy search, and one key to connect.
 
 ```text
 ╔════════════════════════════════════════════════════════════════════════╗
