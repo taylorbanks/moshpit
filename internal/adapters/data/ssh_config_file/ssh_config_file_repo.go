@@ -17,9 +17,9 @@ package ssh_config_file
 import (
 	"fmt"
 
+	"github.com/kevinburke/ssh_config"
 	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/taylorbanks/moshpit/internal/core/ports"
-	"github.com/kevinburke/ssh_config"
 	"go.uber.org/zap"
 )
 

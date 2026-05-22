@@ -22,9 +22,9 @@ import (
 	"github.com/taylorbanks/moshpit/internal/adapters/data/ssh_config_file"
 	"github.com/taylorbanks/moshpit/internal/logger"
 
+	"github.com/spf13/cobra"
 	"github.com/taylorbanks/moshpit/internal/adapters/ui"
 	"github.com/taylorbanks/moshpit/internal/core/services"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -46,7 +46,7 @@ func getMetadataPath(home string) string {
 	// Try to migrate from .lazymosh first (legacy path)
 	if _, err := os.Stat(lazymoshPath); err == nil {
 		if err := os.MkdirAll(filepath.Dir(newPath), 0o750); err == nil {
-			if data, err := os.ReadFile(lazymoshPath); err == nil {
+			if data, err := os.ReadFile(lazymoshPath); err == nil { //nolint:gosec // G304 false positive, $HOME path
 				if err := os.WriteFile(newPath, data, 0o600); err == nil {
 					fmt.Fprintf(os.Stderr, "Migrated metadata from %s to %s\n", lazymoshPath, newPath)
 					return newPath
@@ -59,7 +59,7 @@ func getMetadataPath(home string) string {
 	// Try to migrate from .lazyssh (original)
 	if _, err := os.Stat(lazysshPath); err == nil {
 		if err := os.MkdirAll(filepath.Dir(newPath), 0o750); err == nil {
-			if data, err := os.ReadFile(lazysshPath); err == nil {
+			if data, err := os.ReadFile(lazysshPath); err == nil { //nolint:gosec // G304 false positive, $HOME path
 				if err := os.WriteFile(newPath, data, 0o600); err == nil {
 					fmt.Fprintf(os.Stderr, "Migrated metadata from %s to %s\n", lazysshPath, newPath)
 					return newPath

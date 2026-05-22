@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/kevinburke/ssh_config"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 )
 
 const (

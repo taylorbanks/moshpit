@@ -19,10 +19,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/atotto/clipboard"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 )
 
 // =============================================================================
@@ -35,6 +35,8 @@ const (
 
 	ForwardModeOnlyForward = "Only forward"
 	ForwardModeForwardSSH  = "Forward + SSH"
+
+	protocolMosh = "mosh"
 )
 
 func (t *tui) handleGlobalKeys(event *tcell.EventKey) *tcell.EventKey {
@@ -135,13 +137,13 @@ func (t *tui) handleProtocolToggle() {
 		return
 	}
 
-	newProtocol := "mosh"
-	if server.Protocol == "mosh" {
+	newProtocol := protocolMosh
+	if server.Protocol == protocolMosh {
 		newProtocol = "ssh"
 	}
 
 	// Check mosh availability if switching to mosh
-	if newProtocol == "mosh" && !t.serverService.IsMoshAvailable() {
+	if newProtocol == protocolMosh && !t.serverService.IsMoshAvailable() {
 		t.showStatusTempColor("⚠ Mosh not installed - cannot enable", Hex(ActiveTheme.Red))
 		return
 	}
@@ -154,7 +156,7 @@ func (t *tui) handleProtocolToggle() {
 	}
 
 	protocolName := "SSH"
-	if newProtocol == "mosh" {
+	if newProtocol == protocolMosh {
 		protocolName = "Mosh"
 	}
 	t.showStatusTempColor(fmt.Sprintf("Protocol: %s", protocolName), Hex(ActiveTheme.Green))
@@ -185,7 +187,7 @@ func (t *tui) handleBulkProtocolToggle() {
 		}
 
 		// Check mosh availability if setting to mosh
-		if protocol == "mosh" && !t.serverService.IsMoshAvailable() {
+		if protocol == protocolMosh && !t.serverService.IsMoshAvailable() {
 			t.showStatusTempColor("⚠ Mosh not installed - cannot enable", Hex(ActiveTheme.Red))
 			return
 		}
@@ -360,7 +362,7 @@ func (t *tui) handleReturnToSearch() {
 func (t *tui) handleServerConnect() {
 	if server, ok := t.serverList.GetSelectedServer(); ok {
 		// Warn if mosh selected but unavailable
-		if server.Protocol == "mosh" && !t.serverService.IsMoshAvailable() {
+		if server.Protocol == protocolMosh && !t.serverService.IsMoshAvailable() {
 			t.showStatusTempColor(
 				fmt.Sprintf("⚠ Mosh unavailable for %s, using SSH", server.Alias),
 				Hex(ActiveTheme.Peach),

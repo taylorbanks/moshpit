@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/rivo/tview"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 )
 
 type ServerDetails struct {

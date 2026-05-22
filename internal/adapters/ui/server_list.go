@@ -15,9 +15,9 @@
 package ui
 
 import (
-	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 )
 
 type ServerList struct {

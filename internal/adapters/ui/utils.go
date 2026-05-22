@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/mattn/go-runewidth"
+	"github.com/taylorbanks/moshpit/internal/core/domain"
 )
 
 // IsForwarding is an optional hook supplied by TUI to indicate active forwarding per alias.
@@ -133,7 +133,7 @@ func formatServerLine(s domain.Server, hideTags ...bool) (primary, secondary str
 
 	primary = icon + " " + aliasCol + " " + hostCol + " " + pCol + fCol + lastSSHCol + tagStr
 	secondary = ""
-	return
+	return primary, secondary
 }
 
 func humanizeDuration(t time.Time) string {

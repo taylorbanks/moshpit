@@ -17,9 +17,9 @@ package ui
 import (
 	"go.uber.org/zap"
 
+	"github.com/rivo/tview"
 	"github.com/taylorbanks/moshpit/internal/core/domain"
 	"github.com/taylorbanks/moshpit/internal/core/ports"
-	"github.com/rivo/tview"
 )
 
 type App interface {
@@ -45,11 +45,11 @@ type tui struct {
 	left    *tview.Flex
 	content *tview.Flex
 
-	sortMode           SortMode
-	groupedView        bool
-	showLastSSH        bool
-	onThemeSave        func(string)
-	onGroupedViewSave  func(bool)
+	sortMode          SortMode
+	groupedView       bool
+	showLastSSH       bool
+	onThemeSave       func(string)
+	onGroupedViewSave func(bool)
 }
 
 func NewTUI(logger *zap.SugaredLogger, ss ports.ServerService, version, commit string, onThemeSave func(string), groupedView bool, onGroupedViewSave func(bool)) App {
@@ -141,13 +141,11 @@ func (t *tui) bindEvents() *tui {
 	return t
 }
 
-func (t *tui) loadInitialData() *tui {
+func (t *tui) loadInitialData() {
 	servers, _ := t.serverService.ListServers("")
 	sortServersForUI(servers, t.sortMode)
 	t.updateListTitle()
 	t.updateServerList(servers)
-
-	return t
 }
 
 // updateServerList populates the server list using grouped or flat mode.
