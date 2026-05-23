@@ -414,11 +414,14 @@ Anything red → fix on the branch or abort the integration.
 
 ## 13. Log
 
-(Empty — populated after each wave.)
+| Wave | PR  | Branch              | Result | Merged commit | Notes                                                                                                |
+| ---- | --- | ------------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------- |
+| 1    | 107 | pr-107-mouse-focus  | merged | `4c2d030`     | Cherry-picked `54d33de` from `OlalalalaO/lazyssh:fix/after-usemouse`; auto-merge resolved; FF-merge. |
 
-| Wave | PR | Branch | Result | Merged commit | Notes |
-| ---- | -- | ------ | ------ | ------------- | ----- |
-|      |    |        |        |               |       |
+### Notes on PRs evaluated but skipped during Wave 1
+
+- **#86** — niche (`@`/`:` in usernames is only used for Kerberos / Windows-AD / SSO bastions). Holding unless a concrete need surfaces.
+- **#106** — the backspace bug doesn't exist in moshpit: `setupKeyboardShortcuts`'s input capture only acts on Ctrl combos / KeyEscape / KeyCtrlS and falls through for every other key, so tview's InputField receives backspace normally. Defensive code without a bug to fix.
 
 ## 14. Rollback
 
