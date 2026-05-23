@@ -40,3 +40,7 @@ dist/
 # Binary output
 moshpit
 lazymosh
+
+# Private working documents — kept locally, not for the public repo
+LazyMosh-PRD.md
+Plans/
