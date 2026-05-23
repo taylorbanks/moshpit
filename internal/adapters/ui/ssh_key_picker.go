@@ -49,10 +49,10 @@ func (t *tui) showSSHKeyPicker(alias string, keys []ports.SSHKeyInfo) {
 		})
 	}
 
-	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey { //nolint:exhaustive // only Escape handled
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEscape {
 			t.returnToMain()
-			t.showStatusTemp("ssh-copy-id cancelled")
+			t.showStatusTemp("ssh-copy-id canceled")
 			return nil
 		}
 		return event
