@@ -16,6 +16,7 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -489,14 +490,35 @@ func (t *tui) handlePingSelected() {
 }
 
 func (t *tui) handleInstallSSHKey() {
-	if server, ok := t.serverList.GetSelectedServer(); ok {
-		alias := server.Alias
-		t.showStatusTemp(fmt.Sprintf("Installing key to %s…", alias))
-		t.app.Suspend(func() {
-			_ = t.serverService.CopySSHKey(alias)
-		})
-		t.refreshServerList()
+	server, ok := t.serverList.GetSelectedServer()
+	if !ok {
+		return
 	}
+	alias := server.Alias
+	t.showStatusTemp(fmt.Sprintf("Installing key to %s…", alias))
+
+	var copyErr error
+	t.app.Suspend(func() {
+		copyErr = t.serverService.CopySSHKey(alias)
+		// Without a pause, the TUI redraws so fast you can't see the
+		// ssh-copy-id output. Print a one-line outcome and wait for Enter.
+		fmt.Println()
+		if copyErr != nil {
+			fmt.Printf("ssh-copy-id for %q failed: %v\n", alias, copyErr)
+		} else {
+			fmt.Printf("ssh-copy-id for %q finished.\n", alias)
+		}
+		fmt.Print("Press Enter to return to moshpit…")
+		buf := make([]byte, 1)
+		_, _ = os.Stdin.Read(buf)
+	})
+
+	if copyErr != nil {
+		t.showStatusTempColor(fmt.Sprintf("ssh-copy-id failed: %v", copyErr), Hex(ActiveTheme.Red))
+	} else {
+		t.showStatusTempColor(fmt.Sprintf("ssh-copy-id finished for %s", alias), Hex(ActiveTheme.Green))
+	}
+	t.refreshServerList()
 }
 
 func (t *tui) handleModalClose() {
