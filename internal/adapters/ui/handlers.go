@@ -24,6 +24,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/taylorbanks/moshpit/internal/core/domain"
+	"github.com/taylorbanks/moshpit/internal/core/ports"
 )
 
 // =============================================================================
@@ -495,28 +496,56 @@ func (t *tui) handleInstallSSHKey() {
 		return
 	}
 	alias := server.Alias
-	t.showStatusTemp(fmt.Sprintf("Installing key to %s…", alias))
 
+	keys, err := t.serverService.ListSSHKeys()
+	if err != nil {
+		t.showStatusTempColor(fmt.Sprintf("Could not list SSH keys: %v", err), Hex(ActiveTheme.Red))
+		return
+	}
+	if len(keys) == 0 {
+		t.showStatusTempColor("No public keys found in ~/.ssh/ — generate one with ssh-keygen first.", Hex(ActiveTheme.Red))
+		return
+	}
+	if len(keys) == 1 {
+		// Only one candidate — no point in a picker.
+		t.runSSHCopyID(alias, keys[0])
+		return
+	}
+	t.showSSHKeyPicker(alias, keys)
+}
+
+// runSSHCopyID suspends the TUI, runs ssh-copy-id with the chosen key, then
+// pauses so the user can read the output before the TUI redraws over it.
+//
+// No pre-suspend status message is set: showStatusTemp arms a 2s revert
+// timer, and a long ssh-copy-id (waiting for a password) would let that
+// timer fire mid-suspend and queue a reset that then clobbers the
+// post-suspend outcome message. The "Installing …" line printed inside
+// Suspend serves the same role visibly to the user instead.
+func (t *tui) runSSHCopyID(alias string, key ports.SSHKeyInfo) {
 	var copyErr error
 	t.app.Suspend(func() {
-		copyErr = t.serverService.CopySSHKey(alias)
-		// Without a pause, the TUI redraws so fast you can't see the
-		// ssh-copy-id output. Print a one-line outcome and wait for Enter.
+		fmt.Printf("Installing %s onto %s via ssh-copy-id…\n\n", key.DisplayName, alias)
+		copyErr = t.serverService.CopySSHKey(alias, key.Path)
 		fmt.Println()
 		if copyErr != nil {
 			fmt.Printf("ssh-copy-id for %q failed: %v\n", alias, copyErr)
 		} else {
-			fmt.Printf("ssh-copy-id for %q finished.\n", alias)
+			fmt.Printf("ssh-copy-id for %q finished using %s.\n", alias, key.DisplayName)
 		}
 		fmt.Print("Press Enter to return to moshpit…")
 		buf := make([]byte, 1)
 		_, _ = os.Stdin.Read(buf)
 	})
 
+	// Direct sync calls — we're back on the tview event-loop goroutine here.
+	// (QueueUpdateDraw from this context deadlocks: the loop is blocked
+	// running this handler, so it can never drain the queue.) No race with
+	// a status timer because the pre-suspend showStatusTemp call was removed.
 	if copyErr != nil {
 		t.showStatusTempColor(fmt.Sprintf("ssh-copy-id failed: %v", copyErr), Hex(ActiveTheme.Red))
 	} else {
-		t.showStatusTempColor(fmt.Sprintf("ssh-copy-id finished for %s", alias), Hex(ActiveTheme.Green))
+		t.showStatusTempColor(fmt.Sprintf("Installed %s to %s", key.DisplayName, alias), Hex(ActiveTheme.Green))
 	}
 	t.refreshServerList()
 }

@@ -33,6 +33,16 @@ type ServerService interface {
 	StopForwarding(alias string) error
 	IsForwarding(alias string) bool
 	IsMoshAvailable() bool
-	CopySSHKey(alias string) error
+	CopySSHKey(alias, keyPath string) error
+	ListSSHKeys() ([]SSHKeyInfo, error)
 	Ping(server domain.Server) (bool, time.Duration, error)
+}
+
+// SSHKeyInfo describes a candidate public key the user can install on a remote
+// server. Fingerprint is human-readable output from `ssh-keygen -lf` and may
+// be empty if ssh-keygen is unavailable or the file isn't a key.
+type SSHKeyInfo struct {
+	Path        string
+	DisplayName string
+	Fingerprint string
 }

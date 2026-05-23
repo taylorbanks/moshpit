@@ -20,6 +20,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -351,20 +352,27 @@ func (s *serverService) IsMoshAvailable() bool {
 	return s.detector.IsMoshAvailable()
 }
 
-// CopySSHKey runs `ssh-copy-id <alias>` interactively so the user's public
-// key gets appended to the remote's authorized_keys. The alias is resolved
-// through the user's ssh_config (so IdentityFile, Port, ProxyJump, etc. are
-// all honored automatically).
-func (s *serverService) CopySSHKey(alias string) error {
-	s.logger.Infow("ssh-copy-id start", "alias", alias)
+// CopySSHKey runs `ssh-copy-id` interactively so the chosen public key gets
+// appended to the remote's authorized_keys. If keyPath is empty, ssh-copy-id
+// falls back to its own default search (ssh-agent + default identity files).
+// The alias is resolved through the user's ssh_config so IdentityFile, Port,
+// ProxyJump etc. are all honored automatically.
+func (s *serverService) CopySSHKey(alias, keyPath string) error {
+	s.logger.Infow("ssh-copy-id start", "alias", alias, "key", keyPath)
 
 	if _, err := exec.LookPath("ssh-copy-id"); err != nil {
 		s.logger.Errorw("ssh-copy-id missing", "error", err)
 		return fmt.Errorf("ssh-copy-id not found; install OpenSSH (e.g., brew install openssh)")
 	}
 
-	// #nosec G204 -- alias originates from the user's own ssh_config.
-	cmd := exec.Command("ssh-copy-id", alias)
+	args := []string{}
+	if keyPath != "" {
+		args = append(args, "-i", keyPath)
+	}
+	args = append(args, alias)
+
+	// #nosec G204 -- alias and keyPath both originate from the user's own ssh_config / ~/.ssh.
+	cmd := exec.Command("ssh-copy-id", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -375,6 +383,49 @@ func (s *serverService) CopySSHKey(alias string) error {
 
 	s.logger.Infow("ssh-copy-id end", "alias", alias)
 	return nil
+}
+
+// ListSSHKeys scans ~/.ssh for *.pub files and returns each one with its
+// human-readable ssh-keygen fingerprint when available. known_hosts*.pub and
+// authorized_keys*.pub are excluded — they're not user identity keys.
+func (s *serverService) ListSSHKeys() ([]ports.SSHKeyInfo, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("resolve home dir: %w", err)
+	}
+	matches, err := filepath.Glob(filepath.Join(home, ".ssh", "*.pub"))
+	if err != nil {
+		return nil, fmt.Errorf("glob ~/.ssh/*.pub: %w", err)
+	}
+	sort.Strings(matches)
+
+	keys := make([]ports.SSHKeyInfo, 0, len(matches))
+	for _, path := range matches {
+		base := filepath.Base(path)
+		if strings.HasPrefix(base, "known_hosts") || strings.HasPrefix(base, "authorized_keys") {
+			continue
+		}
+		display := base
+		if rel, err := filepath.Rel(home, path); err == nil {
+			display = "~/" + rel
+		}
+		keys = append(keys, ports.SSHKeyInfo{
+			Path:        path,
+			DisplayName: display,
+			Fingerprint: sshKeyFingerprint(path),
+		})
+	}
+	return keys, nil
+}
+
+// sshKeyFingerprint returns the trimmed output of `ssh-keygen -lf <path>`, or
+// the empty string if ssh-keygen is unavailable or the file isn't a key.
+func sshKeyFingerprint(path string) string {
+	out, err := exec.Command("ssh-keygen", "-lf", path).Output() // #nosec G204
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
 }
 
 // Ping checks if the server is reachable on its SSH port.
