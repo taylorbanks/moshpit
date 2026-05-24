@@ -326,7 +326,7 @@ If you find moshpit useful, please consider giving the repo a **star** ⭐️ an
 moshpit stands almost entirely on the shoulders of others — these credits are not a formality.
 
 - **[LazySSH](https://github.com/Adembc/lazyssh) by [Adembc](https://github.com/Adembc)** — moshpit is a direct fork of LazySSH, and roughly **95% of this codebase is LazySSH's work**. The architecture, the SSH config parser, the non-destructive write/backup system, the 60+ SSH config field support, and the entire TUI foundation all come from LazySSH and its contributors. Thank you. moshpit exists only because LazySSH gave it such a strong starting point.
-- **[digunix (Kevin)](https://github.com/digunix)** — for substantial contributions to moshpit via pull request: completing the moshpit rebrand, building the 12-theme library and in-app theme picker, and adding the tag-based grouped view with aligned column layout. Much appreciated. 🤘
+- **[digunix (Kevin)](https://github.com/digunix)** — for the original inspiration and motivation to fork LazySSH, as well as substantial contributions to moshpit via pull request: completing the moshpit rebrand, building the 12-theme library and in-app theme picker, and adding the tag-based grouped view with aligned column layout. Much appreciated, brother! 🤘
 - **[Mosh](https://mosh.org)** — the mobile shell that makes roaming, reconnecting remote sessions possible, and the reason moshpit exists.
 - Built with [tview](https://github.com/rivo/tview) and [tcell](https://github.com/gdamore/tcell).
 - LazySSH itself was inspired by [k9s](https://github.com/derailed/k9s) and [lazydocker](https://github.com/jesseduffield/lazydocker), and moshpit carries that lineage forward.
